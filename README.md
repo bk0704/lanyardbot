@@ -46,8 +46,8 @@ The reason why I decided to build this discord bot is that I noticed there's a h
 
 ---
 # Roadmap
-[ ] Include support for at least 5 more Canadian post-secondary institutions
-[ ] Switch from a OTP based verification to OIDC(for Sheridan College)
+- [ ] Include support for at least 5 more Canadian post-secondary institutions
+- [ ] Switch from a OTP based verification to OIDC(for Sheridan College)
 
 ---
-This program is licensed under an MIT License, check [[LICENSE]] for more details
+This program is licensed under an MIT License, check [LICENSE](LICENSE) for more details
