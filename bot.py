@@ -1,6 +1,7 @@
 import dotenv
 import discord
 import os
+import logging
 
 from discord import app_commands
 from discord.ext import commands
@@ -10,7 +11,6 @@ from views import VerifyView, verification_embed
 dotenv.load_dotenv()
 TOKEN = os.environ["DISCORD_TOKEN"]
 
-# TODO: Create LanyardBot Class
 class LanyardBot(commands.Bot):
     def __init__(self):
         super().__init__(command_prefix=commands.when_mentioned,
@@ -24,7 +24,6 @@ class LanyardBot(commands.Bot):
 
 bot = LanyardBot()
 
-# TODO: Create Verify Command
 class Verification(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -56,5 +55,27 @@ class Verification(commands.Cog):
 
 
 
-# TODO: Create the @bot.tree.error handler
+@bot.tree.error
+async def on_app_command_error(interaction: discord.Interaction,
+                               error: app_commands.AppCommandError):
+    # A failed check raises before the command body runs, so nothing has
+    # responded yet -- without this the user just sees "The application did
+    # not respond."
+    if isinstance(error, app_commands.MissingPermissions):
+        message = "You need the **Manage Server** permission to use this."
+    elif isinstance(error, app_commands.NoPrivateMessage):
+        message = "This command only works inside a server."
+    else:
+        message = "Something went wrong. Please try again."
+        logging.getLogger(__name__).exception(
+            "unhandled error in /%s", getattr(interaction.command, "name", "?"),
+            exc_info=error)
 
+    # is_done() covers both cases: a check that failed before anything
+    # responded, and a crash after the command already replied.
+    send = (interaction.followup.send if interaction.response.is_done()
+            else interaction.response.send_message)
+    await send(message, ephemeral=True)
+
+if __name__ == "__main__":
+    bot.run(TOKEN)

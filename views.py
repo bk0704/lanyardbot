@@ -27,13 +27,15 @@ def verification_embed() -> discord.Embed:
             "\n"
             "**How it works**\n"
             "1. Click **Verify** below\n"
-            f"2. Enter your `@{ALLOWED_DOMAIN}` email address\n"
+            f"2. Enter your `{ALLOWED_DOMAIN}` email address\n"
             "3. Check your inbox for a 6-digit code\n"
             "4. Click **Enter OTP** and type it in\n"
             "\n"
             "**Privacy**\n"
-            "Your email is used once to send your code, and is never stored "
-            "or shared."
+            "Your address is sent to our email provider only to deliver your "
+            "code. We keep a one-way fingerprint of it -- never the address "
+            "itself -- so the same email can't verify two accounts. We can't "
+            "read it back or see who verified with what."
         ),
         color=discord.Color.blurple(),
     )
