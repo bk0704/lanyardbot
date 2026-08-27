@@ -19,7 +19,7 @@ class LanyardBot(commands.Bot):
         self.add_view(VerifyView())
         await self.tree.sync()
 
-# TODO: Instantiate
+bot = LanyardBot()
 
 # TODO: Create Verify Command
 
