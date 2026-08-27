@@ -5,3 +5,4 @@ venv
 NOTES.md
 Plans
 .trash
+*.db
