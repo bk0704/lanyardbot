@@ -18,3 +18,12 @@ class Lanyard(commands.Bot):
                     print (f'Loaded command cog: {filename}')
                 except Exception as e:
                     print(f'Failed to load cog {filename}: {e}')
+
+        # Load event handlers
+        for filename in os.listdir('./events'):
+            if filename.endswith('.py') and filename != '__init__.py':
+                try:
+                    await self.load_extension(f'events.{filename[:-3]}')
+                    print(f"Loaded event handler: {filename}")
+                except Exception as e:
+                    print(f"Failed to load event handler {filename}: {e}")
