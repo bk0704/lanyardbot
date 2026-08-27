@@ -17,8 +17,8 @@ class Verification(commands.Cog):
                 ephemeral=True,
             )
             return
-
-        await interaction.response.send_message(f'Verify verify verify | role: {role.name}')
+        embed = discord.Embed(title='Verification', description='Click below to verified')
+        await interaction.response.send_message(embed=embed)
 
 async def setup(bot):
     await bot.add_cog(Verification(bot))
