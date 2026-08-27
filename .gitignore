@@ -6,3 +6,5 @@ NOTES.md
 Plans
 .trash
 *.db
+__pycache__
+.claude
