@@ -27,3 +27,14 @@ class Lanyard(commands.Bot):
                     print(f"Loaded event handler: {filename}")
                 except Exception as e:
                     print(f"Failed to load event handler {filename}: {e}")
+
+        # Sync slash commands
+        try:
+            await self.tree.sync()
+            print('Commands synced globally')
+            # Debug: Print all registered commands
+            print("Registered commands:")
+            for cmd in self.tree.get_commands():
+                print(f"- {cmd.name}: {cmd.description}")
+        except Exception as e:
+            print(f"Failed to sync commands: {e}")
