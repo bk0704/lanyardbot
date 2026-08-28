@@ -9,3 +9,5 @@ class PendingStore:
         self._entries[user_id] = {'code': code,
                                   'expiry': now + self._ttl}
 
+    def get(self, user_id):
+        return self._entries.get(user_id)
