@@ -11,3 +11,6 @@ class PendingStore:
 
     def get(self, user_id):
         return self._entries.get(user_id)
+
+    def clear(self, user_id):
+        self._entries.pop(user_id, None)
