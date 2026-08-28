@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, timezone
 
 class PendingStore:
     def __init__(self, ttl_minutes=15):
@@ -6,6 +6,10 @@ class PendingStore:
         self._ttl = timedelta(minutes=ttl_minutes)
 
     def save(self, user_id, code, now):
+        if now.tzinfo is None or now.tzinfo.utcoffset(now) is None:
+            raise ValueError('now must be timezone-aware; '
+                             'use datetime.now(timezone.utc)')
+        now = now.astimezone(timezone.utc)
         self._entries[user_id] = {'code': code,
                                   'expiry': now + self._ttl}
 
