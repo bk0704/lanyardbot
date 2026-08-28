@@ -8,3 +8,5 @@ Plans
 *.db
 __pycache__
 .claude
+tests
+conftest.py
