@@ -28,6 +28,6 @@ def send_code(email, code):
 
     try:
         mail_sent = resend.Emails.send(params)
-        print(f"Email ID: []")
+        print(f'Email ID: {mail_sent['id']}')
     except ResendError as error:
         print(error)
