@@ -9,4 +9,4 @@ class VerifyView(discord.ui.View):
 
     @discord.ui.button(label='Verify', style=discord.ButtonStyle.success, custom_id='lanyard:verify')
     async def verify_button(self, interaction, button):
-        await interaction.response.send_modal(EmailModal)
+        await interaction.response.send_modal(EmailModal())
