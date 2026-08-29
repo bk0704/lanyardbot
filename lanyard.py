@@ -4,6 +4,7 @@ from discord.ext import commands
 import discord
 
 from utils.db import init_pool, close_pool
+from views.verifyview import VerifyView
 
 
 class Lanyard(commands.Bot):
@@ -13,6 +14,9 @@ class Lanyard(commands.Bot):
 
     async def setup_hook(self):
         await init_pool()
+
+        # Re-register persistent views so buttons keep working after a restart
+        self.add_view(VerifyView())
 
         # Loading cogs dynamically
         for filename in os.listdir('./commands'):
