@@ -3,7 +3,7 @@ import os
 from discord.ext import commands
 import discord
 
-from utils.db import init_pool
+from utils.db import init_pool, close_pool
 
 
 class Lanyard(commands.Bot):
@@ -43,3 +43,7 @@ class Lanyard(commands.Bot):
                 print(f"- {cmd.name}: {cmd.description}")
         except Exception as e:
             print(f"Failed to sync commands: {e}")
+
+    async def close(self) -> None:
+        await super().close()
+        await close_pool()
