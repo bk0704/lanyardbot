@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 from views.verifyview import VerifyView
+from utils.role import save_role
 
 class Verification(commands.Cog):
     def __init__(self, bot):
@@ -18,6 +19,9 @@ class Verification(commands.Cog):
                 ephemeral=True,
             )
             return
+        guild_id = interaction.guild_id
+        role_id = role.id
+        await save_role(guild_id, role_id)
         embed = discord.Embed(title='Verification', description='Click below to verified')
         await interaction.response.send_message(embed=embed, view=VerifyView())
 
