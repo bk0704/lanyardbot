@@ -9,3 +9,9 @@ async def save_role(guild_id, role_id):
         guild_id, role_id,
     )
 
+async def get_role(guild_id):
+    pool = get_pool()
+    return await pool.fetchval(
+        'SELECT role_id FROM guild_config WHERE guild_id = $1',
+        guild_id,
+    )
