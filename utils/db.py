@@ -14,7 +14,7 @@ async def init_pool():
         return
     _pool = await asyncpg.create_pool(DATABASE_URL)
 
-def get_pool():          
+def get_pool():
     if _pool is None:
         raise RuntimeError("init_pool() was not called")
     return _pool
