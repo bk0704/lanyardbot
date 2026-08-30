@@ -45,4 +45,9 @@ class EmailModal(ui.Modal, title='Enter e-mail'):
             clear_pending(interaction.user.id)
             interaction.followup.send(f'Error sending le email, please try again', view=RetryView(raw), ephemeral=True)
             return
-        await interaction.followup.send(embed=f'A code has been sent to {raw}, please check your inbox, if you cant see it look in junk(15 minute expiry)')
+        embed = discord.Embed(
+            title='Code sent',
+            description=f"A code has been sent to {raw}. Check your inbox — if it's not "
+                        "there, look in junk. The code expires in 15 minutes.",
+        )
+        await interaction.followup.send(embed=embed)
