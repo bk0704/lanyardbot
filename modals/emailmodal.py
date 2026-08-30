@@ -1,3 +1,5 @@
+import asyncio
+from datetime import datetime, timezone
 import os
 
 import discord
@@ -6,6 +8,10 @@ from discord._types import ClientT
 from dotenv import load_dotenv
 import discord
 
+from tests.utils.compose import user_id
+from utils.generator import generate_code
+from utils.mailer import send_code
+from utils.pending import save_pending, get_pending, clear_pending
 from utils.validate import is_valid_email
 
 load_dotenv()
@@ -29,3 +35,6 @@ class EmailModal(ui.Modal, title='Enter e-mail'):
         if not is_valid_email(raw):
             await interaction.followup.send('Your email is a lil bit too shitty imo')
             return
+        code = generate_code()
+        save_pending(interaction.user.id, code, now=datetime.now(timezone.utc))
+        result = await asyncio.to_thread(send_code, raw.strip().lower(), code)
