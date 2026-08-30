@@ -13,6 +13,7 @@ from utils.generator import generate_code
 from utils.mailer import send_code
 from utils.pending import save_pending, get_pending, clear_pending
 from utils.validate import is_valid_email
+from views.retryview import RetryView
 
 load_dotenv()
 DOMAIN = os.getenv('ALLOWED_DOMAIN')
@@ -39,3 +40,9 @@ class EmailModal(ui.Modal, title='Enter e-mail'):
         code = generate_code()
         save_pending(interaction.user.id, code, now=datetime.now(timezone.utc))
         result = await asyncio.to_thread(send_code, raw.strip().lower(), code)
+        if result is None:
+            from views.retryview import RetryView
+            clear_pending(interaction.user.id)
+            interaction.followup.send(f'Error sending le email, please try again', view=RetryView(raw), ephemeral=True)
+            return
+
