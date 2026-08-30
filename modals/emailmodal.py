@@ -33,7 +33,8 @@ class EmailModal(ui.Modal, title='Enter e-mail'):
         await interaction.response.defer(ephemeral=True, thinking=True)
         raw = self.email.value
         if not is_valid_email(raw):
-            await interaction.followup.send('Your email is a lil bit too shitty imo')
+            from views.retryview import RetryView
+            await interaction.followup.send(f'Please enter a valid {DOMAIN} email', view=RetryView(raw), ephemeral=True)
             return
         code = generate_code()
         save_pending(interaction.user.id, code, now=datetime.now(timezone.utc))
