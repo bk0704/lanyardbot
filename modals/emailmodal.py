@@ -14,7 +14,7 @@ from utils.generator import generate_code
 from utils.mailer import send_code
 from utils.pending import save_pending, get_pending, clear_pending
 from utils.validate import is_valid_email
-from views.retryview import RetryView
+from views.codeview import CodeView
 
 load_dotenv()
 DOMAIN = os.getenv('ALLOWED_DOMAIN')
@@ -51,7 +51,7 @@ class EmailModal(ui.Modal, title='Enter e-mail'):
             description=f"A code has been sent to {raw}. Check your inbox — if it's not "
                         "there, look in junk. The code expires in 15 minutes.",
         )
-        await interaction.followup.send(embed=embed, ephemeral=True)
+        await interaction.followup.send(embed=embed, view=CodeView(), ephemeral=True)
 
     async def on_error(self, interaction, error):
         traceback.print_exception(type(error), error, error.__traceback__)
