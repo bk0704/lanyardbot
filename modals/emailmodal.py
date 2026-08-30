@@ -9,7 +9,6 @@ from discord._types import ClientT
 from dotenv import load_dotenv
 import discord
 
-from tests.utils.compose import user_id
 from utils.generator import generate_code
 from utils.mailer import send_code
 from utils.pending import save_pending, get_pending, clear_pending
@@ -44,7 +43,7 @@ class EmailModal(ui.Modal, title='Enter e-mail'):
         if result is None:
             from views.retryview import RetryView
             clear_pending(interaction.user.id)
-            interaction.followup.send(f'Error sending le email, please try again', view=RetryView(raw), ephemeral=True)
+            await interaction.followup.send(f'Error sending le email, please try again', view=RetryView(raw), ephemeral=True)
             return
         embed = discord.Embed(
             title='Code sent',
@@ -58,4 +57,5 @@ class EmailModal(ui.Modal, title='Enter e-mail'):
         message = "Something went wrong. Please try again in a moment."
         if interaction.response.is_done():
             await interaction.followup.send(message, ephemeral=True)
-        await interaction.response.send_message(message, ephemeral=True)
+        else:
+            await interaction.response.send_message(message, ephemeral=True)

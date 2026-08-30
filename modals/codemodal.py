@@ -39,7 +39,9 @@ class CodeModal(ui.Modal, title='Enter OTP'):
         if status == 'expired' or status == 'none':
             await interaction.followup.send('that code has expired or was already used — start over', ephemeral=True)
             return
-        if role in interaction.user.roles: await interaction.followup.send('Your are already verified :)', ephemeral=True)
+        if role in interaction.user.roles:
+            await interaction.followup.send('Your are already verified :)', ephemeral=True)
+            return
         try:
             await interaction.user.add_roles(role, reason='LanyardBot Verification')
             await interaction.followup.send('Congrats on being verified', ephemeral=True)
@@ -55,4 +57,5 @@ class CodeModal(ui.Modal, title='Enter OTP'):
         message = "Something went wrong. Please try again in a moment."
         if interaction.response.is_done():
             await interaction.followup.send(message, ephemeral=True)
-        await interaction.response.send_message(message, ephemeral=True)
+        else:
+            await interaction.response.send_message(message, ephemeral=True)
