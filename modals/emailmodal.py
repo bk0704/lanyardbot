@@ -50,4 +50,4 @@ class EmailModal(ui.Modal, title='Enter e-mail'):
             description=f"A code has been sent to {raw}. Check your inbox — if it's not "
                         "there, look in junk. The code expires in 15 minutes.",
         )
-        await interaction.followup.send(embed=embed)
+        await interaction.followup.send(embed=embed, ephemeral=True)
