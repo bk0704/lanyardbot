@@ -1,4 +1,5 @@
 import asyncio
+import traceback
 from datetime import datetime, timezone
 import os
 
@@ -51,3 +52,10 @@ class EmailModal(ui.Modal, title='Enter e-mail'):
                         "there, look in junk. The code expires in 15 minutes.",
         )
         await interaction.followup.send(embed=embed, ephemeral=True)
+
+    async def on_error(self, interaction, error):
+        traceback.print_exception(type(error), error, error.__traceback__)
+        message = "Something went wrong. Please try again in a moment."
+        if interaction.response.is_done():
+            await interaction.followup.send(message, ephemeral=True)
+        await interaction.response.send_message(message, ephemeral=True)
