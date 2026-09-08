@@ -56,6 +56,13 @@ class CodeModal(ui.Modal, title='Enter OTP'):
             return
         except discord.HTTPException as e:
             print(f'Assign failed because of {e}')
+            # The code was consumed by check_code before we got here, so there is
+            # nothing to retry with -- say so rather than leaving them guessing.
+            await interaction.followup.send(
+                "Discord wouldn't let me assign the role just then. Your code has "
+                "already been used, so please start over and request a new one.",
+                ephemeral=True,
+            )
             return
 
     async def on_error(self, interaction, error):
