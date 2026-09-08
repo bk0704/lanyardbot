@@ -37,6 +37,12 @@ class CodeModal(ui.Modal, title='Enter OTP'):
                 ephemeral=True,
             )
             return
+        # Checked before check_code, which consumes the pending entry on success:
+        # an already-verified user should not burn a code to be told they did not
+        # need one.
+        if role in interaction.user.roles:
+            await interaction.followup.send("You're already verified :)", ephemeral=True)
+            return
         status = check_code(user_id, raw, now)
         if status == 'wrong':
             from views.codeview import CodeView
@@ -44,9 +50,6 @@ class CodeModal(ui.Modal, title='Enter OTP'):
             return
         if status == 'expired' or status == 'none':
             await interaction.followup.send('that code has expired or was already used — start over', ephemeral=True)
-            return
-        if role in interaction.user.roles:
-            await interaction.followup.send('Your are already verified :)', ephemeral=True)
             return
         try:
             await interaction.user.add_roles(role, reason='LanyardBot Verification')
