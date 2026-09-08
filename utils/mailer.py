@@ -21,7 +21,7 @@ def send_code(email, code):
     params: resend.Emails.SendParams = {
         'from': EMAIL_FROM,
         'to': [email],
-        'subject': f'Your LanyardBot OTP is {code}',
+        'subject': f'Here is your LanyardBot Verification Code',
         'html': build_html(code),
         'text': f"Your LanyardBot verification code: {code}\n\nThis code expires in 15 minutes.\n\nIf you didn't request this, you can ignore this email."
     }
