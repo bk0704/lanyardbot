@@ -1,22 +1,19 @@
 import asyncio
 import traceback
 from datetime import datetime, timezone
-import os
 
 import discord
 from discord import ui, Interaction
 from discord._types import ClientT
-from dotenv import load_dotenv
-import discord
 
+from utils.config import ALLOWED_DOMAIN
 from utils.generator import generate_code
 from utils.mailer import send_code
 from utils.pending import save_pending, get_pending, clear_pending
 from utils.validate import is_valid_email
 from views.codeview import CodeView
 
-load_dotenv()
-DOMAIN = os.getenv('ALLOWED_DOMAIN')
+DOMAIN = ALLOWED_DOMAIN
 
 class EmailModal(ui.Modal, title='Enter e-mail'):
     email = ui.TextInput(label='Enter uni email',

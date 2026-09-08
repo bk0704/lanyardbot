@@ -1,11 +1,9 @@
-import os
 import resend
-from dotenv import load_dotenv
 from resend.exceptions import ResendError
 
-load_dotenv()
-resend.api_key = os.environ['RESEND_API_KEY']
-EMAIL_FROM = os.getenv('EMAIL_FROM')
+from utils.config import EMAIL_FROM, RESEND_API_KEY
+
+resend.api_key = RESEND_API_KEY
 
 def build_html(code):
     return f"""

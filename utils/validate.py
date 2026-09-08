@@ -1,11 +1,9 @@
-import os
-
-from dotenv import load_dotenv
 import utils.pending as pe
+from utils.config import ALLOWED_DOMAIN
 from utils.pending import clear_pending
 
-load_dotenv()
-DOMAIN = os.getenv('ALLOWED_DOMAIN')
+#: Re-exported so callers and tests that read ``validate.DOMAIN`` keep working.
+DOMAIN = ALLOWED_DOMAIN
 
 def is_valid_email(email):
     email = email.strip().lower()
