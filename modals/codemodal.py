@@ -8,6 +8,22 @@ from utils.role import get_role
 from utils.validate import check_code
 from views.retryview import RetryView
 
+#: Replies for every non-'ok' outcome of :func:`utils.validate.check_code`.
+#: 'expired' and 'none' deliberately share wording, so the reply does not reveal
+#: whether a pending entry existed.
+STATUS_MESSAGES = {
+    'wrong': "Your code ain't right please try again",
+    'expired': 'that code has expired or was already used — start over',
+    'none': 'that code has expired or was already used — start over',
+}
+
+#: Used for any status missing from STATUS_MESSAGES. Reaching this means
+#: check_code grew an outcome nobody wired up here; the role is withheld rather
+#: than granted, so a new status can never fail open.
+UNKNOWN_STATUS_MESSAGE = (
+    'Something went wrong with that code. Please start over and request a new one.'
+)
+
 
 class CodeModal(ui.Modal, title='Enter OTP'):
     code = ui.TextInput(label='Enter 6-digit OTP',
@@ -44,12 +60,17 @@ class CodeModal(ui.Modal, title='Enter OTP'):
             await interaction.followup.send("You're already verified :)", ephemeral=True)
             return
         status = check_code(user_id, raw, now)
-        if status == 'wrong':
-            from views.codeview import CodeView
-            await interaction.followup.send('Your code ain\'t right please try again', view=CodeView(), ephemeral=True)
-            return
-        if status == 'expired' or status == 'none':
-            await interaction.followup.send('that code has expired or was already used — start over', ephemeral=True)
+        if status != 'ok':
+            # Fail closed: only an explicit 'ok' may continue to add_roles.
+            kwargs = {'ephemeral': True}
+            if status == 'wrong':
+                # Imported here, not at module scope: views.codeview imports this
+                # module, so a top-level import would be circular.
+                from views.codeview import CodeView
+                kwargs['view'] = CodeView()
+            await interaction.followup.send(
+                STATUS_MESSAGES.get(status, UNKNOWN_STATUS_MESSAGE), **kwargs
+            )
             return
         try:
             await interaction.user.add_roles(role, reason='LanyardBot Verification')
