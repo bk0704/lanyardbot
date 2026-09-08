@@ -25,11 +25,17 @@ class CodeModal(ui.Modal, title='Enter OTP'):
         user_id = interaction.user.id
         role_id = await get_role(interaction.guild.id)
         if role_id is None:
-            await interaction.followup.send(f"this server hasn't been set up yet, ask an admin to run `/verify`")
+            await interaction.followup.send(
+                f"this server hasn't been set up yet, ask an admin to run `/verify`",
+                ephemeral=True,
+            )
             return
         role = interaction.guild.get_role(role_id)
         if role is None:
-            await interaction.followup.send(f"this server hasn't been set up yet, ask an admin to run `/verify`")
+            await interaction.followup.send(
+                f"this server hasn't been set up yet, ask an admin to run `/verify`",
+                ephemeral=True,
+            )
             return
         status = check_code(user_id, raw, now)
         if status == 'wrong':
