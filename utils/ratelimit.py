@@ -32,12 +32,13 @@ class RateLimiter:
         self._limit = limit
         self._window = timedelta(minutes=per_minutes)
         self._hits = {}
+        self._last_sweep = None
 
     def _prune(self, key, now):
         """Drop timestamps that have aged out; return the live deque or None.
 
-        Keys whose deque empties are deleted rather than left behind, so an
-        unbounded stream of distinct keys cannot grow this dict forever.
+        Only touches ``key``. A key nobody uses again is not reached here at
+        all, which is what :meth:`_maybe_sweep` exists to handle.
         """
         hits = self._hits.get(key)
         if hits is None:
@@ -58,9 +59,33 @@ class RateLimiter:
             return None
         return (hits[0] + self._window - now).total_seconds()
 
+    def _maybe_sweep(self, now):
+        """Drop every fully-expired key, at most once per window.
+
+        _prune only cleans the key it is handed, so a user or address that
+        never comes back leaves its deque behind forever. Sweeping on a timer
+        bounds the dict by *active* keys rather than by every key ever seen,
+        without a background task and without evicting anything still live --
+        an LRU bound would drop keys that are still inside their window, which
+        turns a memory issue into a limit an attacker can flush deliberately.
+        """
+        if self._last_sweep is None:
+            self._last_sweep = now
+            return
+        if now - self._last_sweep < self._window:
+            return
+        cutoff = now - self._window
+        # A deque is append-ordered, so if the newest entry has aged out they
+        # all have.
+        expired = [k for k, hits in self._hits.items() if not hits or hits[-1] <= cutoff]
+        for key in expired:
+            del self._hits[key]
+        self._last_sweep = now
+
     def record(self, key, now):
         """Charge one event against ``key``."""
         now = _as_utc(now)
+        self._maybe_sweep(now)
         self._prune(key, now)
         self._hits.setdefault(key, deque()).append(now)
 
