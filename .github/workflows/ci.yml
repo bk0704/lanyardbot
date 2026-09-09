@@ -1,0 +1,50 @@
+name: CI
+
+# Plain `pull_request`, deliberately NOT `pull_request_target`: this checks out
+# code from forks, and pull_request_target would run that code with access to
+# this repository's secrets. There are no secrets here today, and this keeps it
+# that way if any are ever added.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Least privilege: nothing here writes to the repository.
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    # The bot reads its configuration at import time and refuses to start
+    # without it, so the import check needs values. These are placeholders, not
+    # secrets -- they only need to be non-empty and correctly shaped: an
+    # ALLOWED_DOMAIN starting with '@' and a postgres:// DSN. Nothing here
+    # connects to anything.
+    env:
+      DISCORD_TOKEN: ci-not-a-real-token
+      RESEND_API_KEY: ci-not-a-real-key
+      EMAIL_FROM: ci@example.com
+      ALLOWED_DOMAIN: '@example.com'
+      DATABASE_URL: postgresql://ci:ci@localhost/ci
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'   # keep in step with .python-version
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Compile every source file
+        run: python -m compileall -q bot.py lanyard.py utils modals views commands
+
+      - name: Import the bot
+        # Catches broken imports and import-time errors before they reach the
+        # host, where a failed start burns the restart budget and then goes
+        # quiet. Imports the bot module without connecting to Discord.
+        run: python -c "import lanyard; print('import OK')"
