@@ -15,6 +15,8 @@ STATUS_MESSAGES = {
     'wrong': "Your code ain't right please try again",
     'expired': 'that code has expired or was already used — start over',
     'none': 'that code has expired or was already used — start over',
+    'locked': 'too many wrong tries — that code has been cancelled. Start over '
+              'and request a new one.',
 }
 
 #: Used for any status missing from STATUS_MESSAGES. Reaching this means

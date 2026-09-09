@@ -19,6 +19,10 @@ def check_code(user_id, submitted, now):
     if now > _pending['expiry']:
         clear_pending(user_id)
         return 'expired'
-    if submitted != _pending['code']: return 'wrong'
+    if submitted != _pending['code']:
+        # register_failure discards the entry once the cap is reached, so a
+        # 'locked' result also means the code is already gone.
+        remaining = pe.register_failure(user_id)
+        return 'wrong' if remaining > 0 else 'locked'
     clear_pending(user_id)
     return 'ok'
