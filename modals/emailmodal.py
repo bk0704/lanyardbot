@@ -53,7 +53,16 @@ class EmailModal(ui.Modal, title='Enter e-mail'):
         record_send(interaction.user.id, email, now)
         code = generate_code()
         save_pending(interaction.user.id, code, now=now)
-        result = await asyncio.to_thread(send_code, email, code)
+        try:
+            result = await asyncio.to_thread(send_code, email, code)
+        except Exception:
+            # send_code only catches ResendError. A connect timeout, a TLS
+            # failure, NoContentError (which is not a ResendError subclass) or a
+            # missing 'id' in the response would otherwise propagate to
+            # on_error, which does not clear the pending entry -- leaving a live
+            # code the user never received and no way to retry.
+            traceback.print_exc()
+            result = None
         if result is None:
             from views.retryview import RetryView
             clear_pending(interaction.user.id)
