@@ -10,6 +10,7 @@ from utils.config import ALLOWED_DOMAIN
 from utils.generator import generate_code
 from utils.mailer import send_code
 from utils.pending import save_pending, get_pending, clear_pending
+from utils.ratelimit import describe_wait, record_send, retry_after_for_send
 from utils.validate import is_valid_email
 from views.codeview import CodeView
 
@@ -34,9 +35,25 @@ class EmailModal(ui.Modal, title='Enter e-mail'):
             from views.retryview import RetryView
             await interaction.followup.send(f'Please enter a valid {DOMAIN} email', view=RetryView(raw), ephemeral=True)
             return
+        # Normalised once, and used for the rate-limit key as well as the send:
+        # keying on the raw value would let capitalisation open a second bucket.
+        email = raw.strip().lower()
+        now = datetime.now(timezone.utc)
+        wait = retry_after_for_send(interaction.user.id, email, now)
+        if wait is not None:
+            # No RetryView here. Every other failure path offers one, but a
+            # "Try again" button on a cooldown invites the loop this limit
+            # exists to stop. The wording is identical whichever limit tripped,
+            # so it cannot be used to learn that a given address is mid-flow.
+            await interaction.followup.send(
+                f'Too many code requests — try again in {describe_wait(wait)}.',
+                ephemeral=True,
+            )
+            return
+        record_send(interaction.user.id, email, now)
         code = generate_code()
-        save_pending(interaction.user.id, code, now=datetime.now(timezone.utc))
-        result = await asyncio.to_thread(send_code, raw.strip().lower(), code)
+        save_pending(interaction.user.id, code, now=now)
+        result = await asyncio.to_thread(send_code, email, code)
         if result is None:
             from views.retryview import RetryView
             clear_pending(interaction.user.id)
