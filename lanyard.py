@@ -4,6 +4,8 @@ from discord.ext import commands
 import discord
 
 from utils.db import init_pool, close_pool
+from views.codeview import CodeView
+from views.retryview import RetryView
 from views.verifyview import VerifyView
 
 
@@ -15,8 +17,13 @@ class Lanyard(commands.Bot):
     async def setup_hook(self):
         await init_pool()
 
-        # Re-register persistent views so buttons keep working after a restart
+        # Re-register persistent views so buttons keep working after a restart.
+        # CodeView and RetryView live on ephemeral followups, which Discord keeps
+        # around after a redeploy; without this their buttons answer clicks with
+        # "This interaction failed".
         self.add_view(VerifyView())
+        self.add_view(CodeView())
+        self.add_view(RetryView())
 
         # Loading cogs dynamically
         for filename in os.listdir('./commands'):

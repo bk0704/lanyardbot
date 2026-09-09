@@ -1,22 +1,20 @@
 import asyncio
 import traceback
 from datetime import datetime, timezone
-import os
 
 import discord
 from discord import ui, Interaction
 from discord._types import ClientT
-from dotenv import load_dotenv
-import discord
 
+from utils.config import ALLOWED_DOMAIN
 from utils.generator import generate_code
 from utils.mailer import send_code
 from utils.pending import save_pending, get_pending, clear_pending
+from utils.ratelimit import describe_wait, record_send, retry_after_for_send
 from utils.validate import is_valid_email
 from views.codeview import CodeView
 
-load_dotenv()
-DOMAIN = os.getenv('ALLOWED_DOMAIN')
+DOMAIN = ALLOWED_DOMAIN
 
 class EmailModal(ui.Modal, title='Enter e-mail'):
     email = ui.TextInput(label='Enter uni email',
@@ -37,9 +35,34 @@ class EmailModal(ui.Modal, title='Enter e-mail'):
             from views.retryview import RetryView
             await interaction.followup.send(f'Please enter a valid {DOMAIN} email', view=RetryView(raw), ephemeral=True)
             return
+        # Normalised once, and used for the rate-limit key as well as the send:
+        # keying on the raw value would let capitalisation open a second bucket.
+        email = raw.strip().lower()
+        now = datetime.now(timezone.utc)
+        wait = retry_after_for_send(interaction.user.id, email, now)
+        if wait is not None:
+            # No RetryView here. Every other failure path offers one, but a
+            # "Try again" button on a cooldown invites the loop this limit
+            # exists to stop. The wording is identical whichever limit tripped,
+            # so it cannot be used to learn that a given address is mid-flow.
+            await interaction.followup.send(
+                f'Too many code requests — try again in {describe_wait(wait)}.',
+                ephemeral=True,
+            )
+            return
+        record_send(interaction.user.id, email, now)
         code = generate_code()
-        save_pending(interaction.user.id, code, now=datetime.now(timezone.utc))
-        result = await asyncio.to_thread(send_code, raw.strip().lower(), code)
+        save_pending(interaction.user.id, code, now=now)
+        try:
+            result = await asyncio.to_thread(send_code, email, code)
+        except Exception:
+            # send_code only catches ResendError. A connect timeout, a TLS
+            # failure, NoContentError (which is not a ResendError subclass) or a
+            # missing 'id' in the response would otherwise propagate to
+            # on_error, which does not clear the pending entry -- leaving a live
+            # code the user never received and no way to retry.
+            traceback.print_exc()
+            result = None
         if result is None:
             from views.retryview import RetryView
             clear_pending(interaction.user.id)
